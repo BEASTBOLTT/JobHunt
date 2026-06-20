@@ -1,12 +1,24 @@
-import React from 'react'
+
 import { useNavigate, Link } from 'react-router'
+import { useAuth } from '../hooks/useAuth'
+import { useState } from 'react'
 
 const Login = () => {
 
-    const navigate  = useNavigate()
+    const {loading, handleLogin} = useAuth()
+    const navigate = useNavigate()
 
-    const handleSubmit = (e) => {
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+
+    const handleSubmit = async (e) => {
         e.preventDefault()
+        await handleLogin({email, password})
+        navigate("/")
+    }
+
+    if(loading){
+        return (<main>Loading.......</main>)
     }
 
 
@@ -18,12 +30,12 @@ const Login = () => {
                   <form className='m-10 mt-5 mb-3 flex flex-col' onSubmit={handleSubmit}>
                       <div className='m-1 flex flex-col'>
                           <label className='m-1' htmlFor="email">Email</label>
-                          <input className="bg-white border rounded-xl text-gray-500 p-2
+                          <input onChange={(e) => {setEmail(e.target.value)}} className="bg-white border rounded-xl text-gray-500 p-2
                         text-xs font-bold" type="email" id="email" name="email" placeholder='Enter Email Address' />
                       </div>
                       <div className='m-1 flex flex-col'>
                           <label className='m-1' htmlFor="password">Password</label>
-                          <input className="bg-white border rounded-xl text-gray-500  p-2
+                          <input onChange={(e) => { setPassword(e.target.value) }} className="bg-white border rounded-xl text-gray-500  p-2
                            text-xs font-bold"  type="password" id="password" name="password" placeholder='Enter Password' />
                       </div>
                       <button className='border-0 bg-blue-300 rounded-2xl p-2 w-full mb-5 mt-3 transition-transform active:scale-90 hover:bg-red-500'>Login</button>
