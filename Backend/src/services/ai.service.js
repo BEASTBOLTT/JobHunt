@@ -39,7 +39,7 @@ const geminiResponseSchema = {
             type: Type.ARRAY,
             items: {
                 type: Type.OBJECT,
-                required: ["question", "intention", "answer"], // ← add this
+                required: ["question", "intention", "answer"],
                 properties: {
                     question: { type: Type.STRING },
                     intention: { type: Type.STRING },
@@ -51,7 +51,7 @@ const geminiResponseSchema = {
             type: Type.ARRAY,
             items: {
                 type: Type.OBJECT,
-                required: ["question", "intention", "answer"], // ← add this
+                required: ["question", "intention", "answer"],
                 properties: {
                     question: { type: Type.STRING },
                     intention: { type: Type.STRING },
@@ -74,23 +74,30 @@ const geminiResponseSchema = {
             type: Type.ARRAY,
             items: {
                 type: Type.OBJECT,
-                required: ["day", "focus", "tasks"], // ← add this
+                required: ["day", "focus", "tasks"],
                 properties: {
                     day: { type: Type.INTEGER },
                     focus: { type: Type.STRING },
                     tasks: { type: Type.ARRAY, items: { type: Type.STRING } }
                 }
             }
-        }
+        },
+        title: { type: Type.STRING }
     }
 };
 
 async function generateInterviewReport({resume,selfDescription,jobDescription}) {
 
-    const prompt = `Generate an interview report for a candidate with the following details:
-                    Resume:${resume},
-                    Self Description:${selfDescription},
-                    Job Description:${jobDescription},
+    const prompt = `Generate a comprehensive interview report for a candidate with the following details:
+                    Resume: ${resume},
+                    Self Description: ${selfDescription},
+                    Job Description: ${jobDescription},
+
+                    Requirements:
+                    - Generate AT LEAST 10 technical questions relevant to the job description and candidate's background.
+                    - Generate AT LEAST 10 behavioral questions that assess soft skills and cultural fit.
+                    - Generate a preparation plan of AT LEAST 7 days, one day per entry, each with a clear focus and actionable tasks.
+                    - For each question provide the interviewer's intention and a detailed model answer.
                     `
 
     const response = await ai.models.generateContent({

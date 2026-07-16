@@ -3,7 +3,10 @@ const generateInterviewReport = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
 
 
-
+/**
+ * @description generate new interview report on the basis of user's self description, resume pdf and job description
+ * @access private
+ */
 async function generateInterviewReportController(req, res) {
     
 
@@ -16,10 +19,14 @@ async function generateInterviewReportController(req, res) {
         jobDescription
     })
     if (interviewReportByAI.skillGaps) {
-        interviewReportByAI.skillGaps = interviewReportByAI.skillGaps.map(gap => ({
-            ...gap,
-            severity: gap.severity.toLowerCase()
-        }))
+        const VALID_SEVERITIES = ['low', 'medium', 'high']
+        interviewReportByAI.skillGaps = interviewReportByAI.skillGaps.map(gap => {
+            const normalized = gap.severity.toLowerCase()
+            return {
+                ...gap,
+                severity: VALID_SEVERITIES.includes(normalized) ? normalized : 'medium'
+            }
+        })
     }
 
     const interviewReport = await interviewReportModel.create({
@@ -37,5 +44,43 @@ async function generateInterviewReportController(req, res) {
 }
 
 
+/**
+ * @description get interview report by interviewId
+ * @access private
+ */
+async function getInterviewReportByIdController(req, res) {
+    const {interviewId} = req.params
 
-module.exports = {generateInterviewReportController}
+    const interviewReport = await interviewReportModel.findOne({_id: interviewId, user: req.user.id})
+
+    if (!interviewReport) {
+        return res.status(404).json({
+            message: "Interview Report Not Found"
+        })
+    }
+
+    res.status(200).json({
+        message: "Interview Report Found",
+        interviewReport
+    })
+}
+
+
+/**
+ * @description get all interview reports of the user
+ * @access private
+ */
+async function getAllInterviewReportsController(req, res) {
+    const interviewReports = await interviewReportModel.find({user: req.user.id}).sort({createdAt: -1}).select("-resume -selfDescription -jobDescription -_v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+
+    res.status(200).json({
+        message: "Interview Reports Found",
+        interviewReports
+    })
+}
+
+
+module.exports = {generateInterviewReportController,
+getInterviewReportByIdController,
+getAllInterviewReportsController
+}
