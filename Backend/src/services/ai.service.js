@@ -1,5 +1,6 @@
 const { GoogleGenAI, Type } = require('@google/genai');
 const { z } = require('zod');
+const puppeteer = require('puppeteer');
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -113,4 +114,54 @@ async function generateInterviewReport({resume,selfDescription,jobDescription}) 
     return JSON.parse(response.text);
 }
 
-module.exports = generateInterviewReport;
+
+async function htmlToPdf(htmlContent) {
+    const browser = await puppeteer.launch({
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true
+    });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({ format: 'A4', margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' } });
+    await browser.close();
+    return pdfBuffer;
+}
+
+async function generateResumePdf({resume, selfDescription, jobDescription}){
+
+    const prompt = `Generate a resume for a candidate with the following details:
+                    Resume: ${resume},
+                    Self Description: ${selfDescription},
+                    Job Description: ${jobDescription}
+                    
+                    the response should be a JSON object with a single key "html" containing the HTML content of the resume PDF which can be converted to PDF using a library like Puppeteer or any other PDF generation tool.
+                    the resume should be in a professional format, highlighting the candidate's skills, experience, and achievements relevant to the job description. The resume should be concise, well-structured, and visually appealing.
+                    the content of the resume should not sound like ai generated.
+                    try to keep empty spaces and gaps to minimum only where required and stick to one page not more not less
+                    the content should be ats friendly without losing important information and try to make it as close to the job description to make the chance of selection higher`
+    
+    const response = await ai.models.generateContent({
+        model:"gemini-2.5-flash",
+        contents:prompt,
+        config:{
+            responseMimeType:"application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                required: ["html"],
+                properties: {
+                    html: { type: Type.STRING }
+                }
+            }
+        }
+    })
+
+    const jsonContent = JSON.parse(response.text);
+    const pdfBuffer = await htmlToPdf(jsonContent.html);
+    return pdfBuffer;
+}
+
+module.exports = {
+    generateInterviewReport,
+    generateResumePdf
+};
