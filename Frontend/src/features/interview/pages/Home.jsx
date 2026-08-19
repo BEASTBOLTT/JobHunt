@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { useInterview } from '../hooks/useinterview'
 import { useNavigate } from 'react-router'
+import Loader from '../../../components/Loader'
 
 const Home = () => {
 
@@ -23,11 +24,7 @@ const Home = () => {
 
 
     if (loading) {
-        return (
-            <div className='w-full min-h-screen flex justify-center items-center'>
-                <p className='text-white text-lg'>Generating Report...</p>
-            </div>
-        )
+        return <Loader message="Generating Report..." />
     }
 
 

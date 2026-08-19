@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useInterview } from '../hooks/useinterview'
 import { useParams, useNavigate } from 'react-router'
+import Loader from '../../../components/Loader'
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const mockReport = {
@@ -178,11 +179,7 @@ const Interview = () => {
 
 
     if(loading || !report){
-        return (
-            <div className='w-full min-h-screen flex justify-center items-center'>
-                <p className='text-white text-lg'>Loading Report...</p>
-            </div>
-        )
+        return <Loader message="Loading Report..." />
     }
 
     const scoreColor = report.matchScore >= 80 ? 'text-green-400' : report.matchScore >= 60 ? 'text-yellow-400' : 'text-red-400'
